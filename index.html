@@ -161,10 +161,16 @@
                 </div>
             </form>
 
-            <div class="filter-section">
-                <label for="monthFilter" class="form-label">Filter by Month</label>
-                <input type="month" id="monthFilter" class="form-control">
+            <div class="filter-section d-flex justify-content-between align-items-start">
+                <div class="d-flex flex-column me-3">
+                    <label for="monthFilter" class="form-label">Filter by Month</label>
+                    <input type="month" id="monthFilter" class="form-control">
+                </div>
+                <div class="d-flex flex-column">
+                    <input type="file" id="uploadExcel" accept=".xlsx, .xls" class="form-control mt-2">
+                </div>
             </div>
+            
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover">
@@ -206,7 +212,11 @@
             </nav>
         </div>
         <button id="exportPDF" class="btn btn-success mt-3">Export as PDF</button>
+       
+
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.21/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -444,7 +454,45 @@ document.getElementById('exportPDF').addEventListener('click', function () {
     doc.save('income_tracker.pdf');
 });
 
-    
+document.getElementById('uploadExcel').addEventListener('change', handleFileUpload);
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Assuming the first sheet
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+
+        // Convert sheet to JSON
+        const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        // Process the data from the Excel file and update the incomes array
+        sheetData.forEach((row, index) => {
+            if (index > 0 && row.length > 0) { // Skipping header row
+                const [date, income, dailyEarn] = row;
+                incomes.push({ date: formatExcelDate(date), income: income || '', dailyEarn: dailyEarn || 0 });
+            }
+        });
+
+        // Save to local storage and update the table
+        saveToLocalStorage();
+        updateTable();
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+// Helper function to convert Excel date to readable format
+function formatExcelDate(excelDate) {
+    const date = new Date((excelDate - (25567 + 2)) * 86400 * 1000); // Excel stores dates as number of days since 1/1/1900
+    return date.toISOString().split('T')[0]; // Convert to yyyy-mm-dd format
+}
+
 
     </script>
 </body>
