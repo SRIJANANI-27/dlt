@@ -133,6 +133,9 @@
             nav{
                 margin-top: 5px;
             }
+            .btn{
+                margin-top: 6px;
+            }
         }
     </style>
 </head>
@@ -265,8 +268,8 @@
                     ${incomeCell}
                     <td>${income.dailyEarn}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="editIncome(${index})">Edit</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteIncome(${index})">Delete</button>
+                        <button class="btn btn-warning btn-sm ac" onclick="editIncome(${index})">Edit</button>
+                        <button class="btn btn-danger btn-sm ac" onclick="deleteIncome(${index})">Delete</button>
                     </td>
                 `;
                 incomeTableBody.appendChild(row);
