@@ -129,8 +129,9 @@
                 width: 100%;
                 overflow-x: auto;
             }
-            .btn{
-                margin-bottom: 5px;
+            
+            nav{
+                margin-top: 5px;
             }
         }
     </style>
@@ -166,10 +167,12 @@
                     <label for="monthFilter" class="form-label">Filter by Month</label>
                     <input type="month" id="monthFilter" class="form-control">
                 </div>
-                <div class="d-flex flex-column">
-                    <input type="file" id="uploadExcel" accept=".xlsx, .xls" class="form-control mt-2">
+                <div class="d-flex align-items-center">
+                    <button id="exportPDF" class="btn btn-success btn-sm me-3">📃Export as PDF</button>
+                    <input type="file" id="uploadExcel" accept=".xlsx, .xls" class="form-control">
                 </div>
             </div>
+            
             
 
             <div class="table-responsive">
@@ -210,8 +213,12 @@
                     </li>
                 </ul>
             </nav>
+            <footer class="text-center mt-2 py-3">
+                <p class="mb-0">&copy; 2024 Designed by <b>Srija</b></p>
+            </footer>
+            
         </div>
-        <button id="exportPDF" class="btn btn-success mt-3">Export as PDF</button>
+       
        
 
     </div>
