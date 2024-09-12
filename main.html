@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f3f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 900px;
+            /* margin-top: 50px; */
+            padding: 30px;
+        }
+
+        h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* Card for the form and table */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            padding: 20px;
+        }
+
+        /* Form styles */
+        .form-label {
+            font-weight: 600;
+            color: #555 ;
+        }
+
+        input[type="date"], 
+        input[type="number"], 
+        input[type="month"] {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background-color: #4a90e2;
+            border-color: #4a90e2;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border-radius: 8px;
+            margin-top: 22px;
+        }
+
+        .btn-primary:hover {
+            background-color: #357ab8;
+            border-color: #357ab8;
+            transform: scale(1.05);
+        }
+
+        /* Smooth hover effects for buttons */
+        .btn {
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Table styles */
+        .table thead th {
+            background-color: #4a90e2 !important;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .table td, .table th {
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px;
+        }
+
+        /* Total row styling */
+        .total-row td {
+            font-weight: bold;
+            background-color: #f1f3f5;
+        }
+
+        /* Row hover effects */
+        .table-hover tbody tr:hover {
+            /* background-color: #f5f5f5; */
+            cursor: pointer;
+        }
+
+        /* Filter section */
+        .filter-section {
+            margin-bottom: 20px;
+        }
+
+        /* Income background */
+        .income-bg {
+            /* background-color: rgba(240, 128, 128, 0.758) !important; */
+            color: crimson;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            /* padding: 8px; */
+        }
+
+        /* Responsive Table */
+        @media screen and (max-width: 768px) {
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+            }
+            .btn{
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+       
+        
+        <div class="card">
+            <h3 class="text-center mt-1 mb-4">DLT Tracker</h3>
+            <form id="incomeForm" class="mb-2">
+                <div class="row mb-3 align-items-center d-flex">
+                    <div class="col-md-3 mb-1">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" id="date" class="form-control" required>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label for="income" class="form-label">Income</label>
+                        <input type="number" id="income" class="form-control">
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label for="dailyEarn" class="form-label">Daily Earn</label>
+                        <input type="number" id="dailyEarn" class="form-control" required>
+                    </div>
+                    <div class="col-md-3 mt-2 mt-md-0">
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="filter-section">
+                <label for="monthFilter" class="form-label">Filter by Month</label>
+                <input type="month" id="monthFilter" class="form-control">
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Income</th>
+                            <th>Daily Earn</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incomeTableBody">
+                        <!-- Table rows will be added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2" class="text-end">Total Daily Earn:</td>
+                            <td id="totalDailyEarn">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const incomeForm = document.getElementById('incomeForm');
+        const incomeTableBody = document.getElementById('incomeTableBody');
+        const totalDailyEarn = document.getElementById('totalDailyEarn');
+        const monthFilter = document.getElementById('monthFilter');
+        let incomes = JSON.parse(localStorage.getItem('incomes')) || [];
+        let isEditing = false;
+        let editIndex = null;
+
+        // Load data from local storage on page load
+        window.addEventListener('DOMContentLoaded', function () {
+            updateTable();
+        });
+
+        // Function to save data to local storage
+        function saveToLocalStorage() {
+            localStorage.setItem('incomes', JSON.stringify(incomes));
+        }
+
+        // Function to update the table
+        function updateTable() {
+            incomeTableBody.innerHTML = '';
+            let total = 0;
+
+            incomes.forEach((income, index) => {
+                const row = document.createElement('tr');
+                const incomeCell = income.income ? `<td class="income-bg">${income.income}</td>` : `<td></td>`;
+                
+                row.innerHTML = `
+                    <td>${formatDate(income.date)}</td>
+                    ${incomeCell}
+                    <td>${income.dailyEarn}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editIncome(${index})">Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteIncome(${index})">Delete</button>
+                    </td>
+                `;
+                incomeTableBody.appendChild(row);
+                total += parseFloat(income.dailyEarn);
+            });
+
+            totalDailyEarn.innerText = total.toFixed(2);
+        }
+
+        // Add or edit income
+        incomeForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const date = document.getElementById('date').value;
+            const income = document.getElementById('income').value;
+            const dailyEarn = document.getElementById('dailyEarn').value;
+
+            if (date && dailyEarn) {
+                if (isEditing) {
+                    // Update the existing entry
+                    incomes[editIndex] = { date, income, dailyEarn };
+                    isEditing = false;
+                    editIndex = null;
+                } else {
+                    // Add a new entry
+                    incomes.push({ date, income, dailyEarn });
+                }
+                saveToLocalStorage();
+                updateTable();
+                incomeForm.reset();
+            }
+        });
+
+        // Edit income entry
+        function editIncome(index) {
+            const income = incomes[index];
+            document.getElementById('date').value = income.date;
+            document.getElementById('income').value = income.income || '';
+            document.getElementById('dailyEarn').value = income.dailyEarn;
+
+            isEditing = true;
+            editIndex = index;
+        }
+
+        // Delete income entry
+        function deleteIncome(index) {
+            incomes.splice(index, 1);
+            saveToLocalStorage();
+            updateTable();
+        }
+
+        // Filter based on month
+        monthFilter.addEventListener('change', function () {
+            const selectedMonth = monthFilter.value;
+
+            if (selectedMonth) {
+                const filteredIncomes = incomes.filter(income => income.date.startsWith(selectedMonth));
+                let total = 0;
+
+                incomeTableBody.innerHTML = '';
+                filteredIncomes.forEach((income, index) => {
+                    const incomeCell = income.income ? `<td class="income-bg">${income.income}</td>` : `<td></td>`;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDate(income.date)}</td>
+                        ${incomeCell}
+                        <td>${income.dailyEarn}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editIncome(${index})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteIncome(${index})">Delete</button>
+                        </td>
+                    `;
+                    incomeTableBody.appendChild(row);
+                    total += parseFloat(income.dailyEarn);
+                });
+
+                totalDailyEarn.innerText = total.toFixed(2);
+            } else {
+                updateTable();
+            }
+        });
+
+        // Helper function to format date to dd-mm-yyyy
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}-${month}-${year}`;
+        }
+    </script>
+</body>
+</html>
